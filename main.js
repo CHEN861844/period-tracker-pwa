@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', () => {
 // 註冊 Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -83,7 +84,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     }
   });
 });
-let currentDate = new Date();
+currentDate = new Date();
 
 // 1. 日曆產生函式
 function generateCalendar(date = new Date()) {

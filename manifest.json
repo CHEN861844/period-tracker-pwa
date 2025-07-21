@@ -1,7 +1,8 @@
 {
   "name": "Creamy Period Tracker",
   "short_name": "PeriodTracker",
-  "start_url": "/?utm_source=homescreen",
+  "start_url": "./index.html?utm_source=homescreen",
+  "scope": "./"
   "display": "standalone",
   "background_color": "#FFF9E6",
   "theme_color": "#FFDFA6",

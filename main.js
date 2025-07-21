@@ -1,181 +1,102 @@
 document.addEventListener('DOMContentLoaded', () => {
-// 註冊 Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js');
-  });
-}
-
-// 簡單的分頁切換
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
-    btn.classList.add('active');
-    document.getElementById('view-' + btn.dataset.view).classList.remove('hidden');
-  });
-});
-
-// 1. 日曆產生函式
-function generateCalendar(date = new Date()) {
   const calendarEl = document.getElementById('calendar');
-  calendarEl.innerHTML = '';     // 清空
-  const year = date.getFullYear();
-  const month = date.getMonth();
+  const calendarTitle = document.getElementById('calendar-title');
+  let currentDate = new Date();
 
-  // 建立表格
-  const table = document.createElement('table');
-  table.classList.add('calendar-table');
+  function generateCalendar(date = new Date()) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // 1.1 建表頭：星期
-  const weekdays = ['日','一','二','三','四','五','六'];
-  const thead = document.createElement('thead');
-  const headRow = document.createElement('tr');
-  weekdays.forEach(w => {
-    const th = document.createElement('th');
-    th.textContent = w;
-    headRow.appendChild(th);
-  });
-  thead.appendChild(headRow);
-  table.appendChild(thead);
+    calendarTitle.textContent = `${year} 年 ${month + 1} 月`;
+    calendarEl.innerHTML = '';
 
-  // 1.2 建表身：日期格子
-  const tbody = document.createElement('tbody');
-  // 當月第一天星期幾
-  const firstDay = new Date(year, month, 1).getDay();
-  // 當月一共有幾天
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+    ['日','一','二','三','四','五','六'].forEach(d => {
+      const th = document.createElement('th');
+      th.textContent = d;
+      headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
 
-  let row = document.createElement('tr');
-  // 補空格
-  for (let i = 0; i < firstDay; i++) {
-    row.appendChild(document.createElement('td'));
-  }
-  // 填日期
-  for (let day = 1; day <= daysInMonth; day++) {
-    if (row.children.length === 7) {
-      tbody.appendChild(row);
-      row = document.createElement('tr');
+    let dateNum = 1;
+    for (let i = 0; i < 6; i++) {
+      const row = document.createElement('tr');
+      for (let j = 0; j < 7; j++) {
+        const cell = document.createElement('td');
+        if (i === 0 && j < firstDay) {
+          cell.innerHTML = '';
+        } else if (dateNum > daysInMonth) {
+          break;
+        } else {
+          const iso = new Date(year, month, dateNum).toISOString().split('T')[0];
+          const data = localStorage.getItem(iso);
+          if (data) {
+            cell.classList.add('has-entry');
+          }
+          cell.textContent = dateNum;
+
+          // 點格子進入打卡畫面
+          cell.addEventListener('click', () => {
+            // 切換到打卡頁
+            document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
+            document.querySelector('[data-view="entry"]').classList.add('active');
+            document.getElementById('view-entry').classList.remove('hidden');
+
+            document.getElementById('entry-date').value = iso;
+
+            if (data) {
+              const parsed = JSON.parse(data);
+              document.getElementById('bleed-level').value = parsed.bleedLevel;
+              document.querySelectorAll('#entry-form input[type=checkbox]')
+                .forEach(cb => {
+                  cb.checked = parsed.symptoms.includes(cb.value);
+                });
+            } else {
+              document.getElementById('bleed-level').value = '2';
+              document.querySelectorAll('#entry-form input[type=checkbox]')
+                .forEach(cb => cb.checked = false);
+            }
+          });
+
+          dateNum++;
+        }
+        row.appendChild(cell);
+      }
+      table.appendChild(row);
     }
-    const cell = document.createElement('td');
-    cell.textContent = day;
-    row.appendChild(cell);
+    calendarEl.appendChild(table);
   }
-  // 最後一行補空格
-  while (row.children.length < 7) {
-    row.appendChild(document.createElement('td'));
-  }
-  tbody.appendChild(row);
-  table.appendChild(tbody);
 
-  calendarEl.appendChild(table);
-}
-
-// 2. 初始化載入時就畫一次
-window.addEventListener('load', () => {
-  generateCalendar();
-});
-
-// 3. 在分頁切換時，如果是日曆，就再畫一次
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.dataset.view === 'calendar') {
-      generateCalendar();
-    }
-  });
-});
-currentDate = new Date();
-
-// 1. 日曆產生函式
-function generateCalendar(date = new Date()) {
-  currentDate = date;
-  const calendarEl = document.getElementById('calendar');
-  const titleEl    = document.getElementById('calendar-title');
-  calendarEl.innerHTML = '';
-
-  const year  = date.getFullYear();
-  const month = date.getMonth(); // 0-based
-  // 更新標題
-  titleEl.textContent = `${year} 年 ${month + 1} 月`;
-
-  // 產生表格（同之前）
-  const table = document.createElement('table');
-  table.classList.add('calendar-table');
-
-  const weekdays = ['日','一','二','三','四','五','六'];
-  const thead = document.createElement('thead');
-  const headRow = document.createElement('tr');
-  weekdays.forEach(w => {
-    const th = document.createElement('th');
-    th.textContent = w;
-    headRow.appendChild(th);
-  });
-  thead.appendChild(headRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  const firstDay   = new Date(year, month, 1).getDay();
-  const daysInMonth= new Date(year, month + 1, 0).getDate();
-
-  let row = document.createElement('tr');
-  for (let i = 0; i < firstDay; i++) {
-    row.appendChild(document.createElement('td'));
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    if (row.children.length === 7) {
-      tbody.appendChild(row);
-      row = document.createElement('tr');
-    }
-    const cell = document.createElement('td');
-    cell.textContent = day;
-
-    // 標示已打卡的日期
-    const iso = new Date(year, month, day)
-                    .toISOString()
-                    .split('T')[0];
-    if (localStorage.getItem(iso)) {
-      cell.classList.add('filled');
-    }
-
-    row.appendChild(cell);
-  }
-  while (row.children.length < 7) {
-    row.appendChild(document.createElement('td'));
-  }
-  tbody.appendChild(row);
-  table.appendChild(tbody);
-  calendarEl.appendChild(table);
-}
-
-// 2. Entry 儲存處理
-document.getElementById('entry-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const dateStr = document.getElementById('entry-date')
-                        .value; // yyyy‑MM‑dd
-  const bleed  = document.getElementById('bleed-level').value;
-  const symptoms = Array.from(
-    document.querySelectorAll('#entry-form input[type=checkbox]:checked')
-  ).map(cb => cb.value);
-  // 存 localStorage
-  localStorage.setItem(dateStr, JSON.stringify({
-    bleedLevel: bleed,
-    symptoms: symptoms
-  }));
-  // 清表單（可選）
-  // e.target.reset();
-
-  // 立即重繪日曆
   generateCalendar(currentDate);
 
-  alert(`已記錄 ${dateStr}`);
-});
+  // 分頁切換
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const view = tab.dataset.view;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
 
-// 3. 初始化與分頁切換時渲染
-window.addEventListener('load', () => generateCalendar());
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.dataset.view === 'calendar') {
-      generateCalendar(currentDate);
-    }
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`view-${view}`).classList.remove('hidden');
+    });
+  });
+
+  // 打卡儲存
+  document.getElementById('entry-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const date = document.getElementById('entry-date').value;
+    const bleedLevel = document.getElementById('bleed-level').value;
+    const symptoms = Array.from(document.querySelectorAll('#entry-form input[type=checkbox]'))
+                          .filter(cb => cb.checked)
+                          .map(cb => cb.value);
+    const entry = { bleedLevel, symptoms };
+    localStorage.setItem(date, JSON.stringify(entry));
+    alert('打卡完成！');
+
+    generateCalendar(currentDate);  // 重新渲染日曆
   });
 });

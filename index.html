@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Creamy Period Tracker</title>
+
+  <!-- PWA 必要 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFDFA6">
+
+  <!-- 基本樣式 -->
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Creamy Period Tracker</h1>
+  </header>
+
+  <nav class="tab-bar">
+    <button data-view="calendar" class="tab active">日曆</button>
+    <button data-view="entry"    class="tab">打卡</button>
+    <button data-view="settings" class="tab">設定</button>
+  </nav>
+
+  <main class="view-container">
+    <!-- Calendar View -->
+    <section id="view-calendar" class="view">
+      <div id="calendar"></div>
+    </section>
+
+    <!-- Entry Log View -->
+    <section id="view-entry" class="view hidden">
+      <form id="entry-form">
+        <label>日期：<input type="date" id="entry-date"></label>
+        <label>經血量：
+          <select id="bleed-level">
+            <option value="1">少</option>
+            <option value="2" selected>中</option>
+            <option value="3">多</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend>症狀／心情</legend>
+          <label><input type="checkbox" value="腹痛">腹痛</label>
+          <label><input type="checkbox" value="頭痛">頭痛</label>
+          <label><input type="checkbox" value="脹氣">脹氣</label>
+          <label><input type="checkbox" value="疲倦">疲倦</label>
+          <label><input type="checkbox" value="心情好">心情好</label>
+          <label><input type="checkbox" value="心情差">心情差</label>
+        </fieldset>
+        <button type="submit">儲存打卡</button>
+      </form>
+    </section>
+
+    <!-- Settings View -->
+    <section id="view-settings" class="view hidden">
+      <form id="settings-form">
+        <label>經前提醒：<input type="number" id="period-days" min="1" max="7" value="3"> 天前</label>
+        <label>排卵提醒：<input type="number" id="ovulation-days" min="1" max="3" value="1"> 天前</label>
+        <button type="button" id="reschedule-btn">重新排程所有提醒</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

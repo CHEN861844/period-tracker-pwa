@@ -84,3 +84,16 @@ form button {
   border: 1px solid rgba(0,0,0,0.05);
   height: 2.5rem;
 }
+/* 月／年標題 */
+.calendar-title {
+  text-align: center;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+/* 已登記的日期格子高亮 */
+.calendar-table td.filled {
+  background-color: var(--accent);
+  color: #fff;
+}

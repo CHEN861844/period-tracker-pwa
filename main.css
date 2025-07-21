@@ -70,3 +70,17 @@ form button {
   background: var(--primary);
   color: #333;
 }
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+.calendar-table th {
+  padding: 0.5rem 0;
+  font-weight: bold;
+}
+.calendar-table td {
+  padding: 0.75rem 0;
+  border: 1px solid rgba(0,0,0,0.05);
+  height: 2.5rem;
+}

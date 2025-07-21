@@ -12,7 +12,7 @@ const urlsToCache = [
 self.addEventListener('install', evt => {
   evt.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(FILES_TO_CACHE))
+      .then(cache => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
   );
 });
